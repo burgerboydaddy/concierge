@@ -5,6 +5,10 @@
   "author": {
     "name": "Vladimir Ilic"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://git@github.com:burgerboydaddy/concierge.git"
+  },
   "main": "index",
   "dependencies": {
     "async": "^2.0.0-rc.2",
