@@ -61,22 +61,7 @@ exports.createServiceOffer = {
 internals.getOffers = function(query, callback) {
   // Find serviceOffers for all listed interests.
   // Only return enabled offers, and one that didn't expire
-  // Example MongoDb query:
-  /**
-    db.serviceoffers.find(
-      {
-        $and:[
-          {
-            serviceName: {$in: ['srv1_api', 'app_s3']}
-          },
-          {
-            availableUntil:  { $gte: new Date() }
-          }
-        ]
-      },
-      {_id:0, serviceName:1, serviceOffer:1}
-    );
-  */
+ 
   var dbQuery = {
     "$and":[
       {
