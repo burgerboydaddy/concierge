@@ -8,6 +8,8 @@
 // Load .env config for development environments
 require('dotenv').config({ silent: true });
 
+const pkg = require('./package.json');
+
 const Hapi = require('hapi');
 const logger = require('./logger');
 const Inert = require('inert');
@@ -19,7 +21,14 @@ var mongoose = require('mongoose');
 require('events').EventEmitter.prototype._maxListeners = 100;
 
 // Open DB connection
-global.db = mongoose.connect(process.env.DB_CONNECTION);
+global.mongo = process.env.DB_CONNECTION || 'mongodb://localhost/' + pkg.name;
+console.log("my db:", global.mongo);
+global.db = mongoose.connect(mongo);
+
+// Add scripts from updates folder
+// TODO: make this as auto discovery!
+var updateAccounts = require('./updates/0.0.1.account');
+updateAccounts();
 
 const server = new Hapi.Server();
 server.connection({

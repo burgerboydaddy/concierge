@@ -12,11 +12,13 @@
     "url": "git://git@github.com:burgerboydaddy/concierge.git"
   },
   "dependencies": {
+    "async": "^2.0.0-rc.2",
     "dotenv": "^2.0.0",
     "hapi": "^13.2.2",
     "hapi-swagger": "^4.3.1",
     "inert": "^3.2.0",
     "joi": "^8.0.5",
+    "mongodb": "^2.1.14",
     "mongoose": "^4.4.10",
     "package": "^1.0.1",
     "vision": "^4.0.1",

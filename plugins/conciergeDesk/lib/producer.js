@@ -59,9 +59,9 @@ exports.createServiceOffer = {
 }
 
 internals.getOffers = function(query, callback) {
+
   // Find serviceOffers for all listed interests.
   // Only return enabled offers, and one that didn't expire
- 
   var dbQuery = {
     "$and":[
       {
