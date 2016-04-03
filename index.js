@@ -70,4 +70,5 @@ server.register([
     }
     logger.info('Server started at: ' + server.info.uri + ' with [' + Object.keys(server.plugins).join(', ') + '] enabled');
   });
+
 });

@@ -1,10 +1,11 @@
+'use strict';
 const Joi = require('joi');
 const Boom = require('boom');
 const Calibrate = require('calibrate');
 const logger = require('../../../logger');
-// loads model file and engine
+// loads models
 const serviceOfferModel = require('../models/ServiceOffersModel');
-
+const accountModel = require('../models/AccountModel');
 
 // define internals
 var internals = {};
@@ -15,13 +16,18 @@ exports.getServiceOffers = {
   auth: false,
   validate: {
     query: {
+      accountKey: Joi.string().required().description("Account key"),
       interests: Joi.array().items(Joi.string()).required().description("Array of services that consumer what to query")
     }
   },
   handler: function (request, reply) {
     internals.getOffers(request.query, function (err, data) {
-      if (err != null && typeof err.code !== 'undefined' && err.code != 200) {
-        reply(Calibrate(Boom.badData(err.message, err)));
+      if (err != null && typeof err !== 'undefined' && err != 200) {
+        if(err == 403) {
+          reply(Calibrate(Boom.forbidden(data.message, 403)));
+        } else {
+          reply(Calibrate(Boom.notFound(data.message, 404)));
+        }
       } else {
         reply(Calibrate(data));
       }
@@ -32,7 +38,8 @@ exports.getServiceOffers = {
 exports.createServiceOffer = {
   description: "Create service offer in database.",
   tags: ['api'],
-  auth: false,
+  // auth: false,
+  auth: 'simple',
   validate: {
     params: false,
     payload: {
@@ -59,42 +66,55 @@ exports.createServiceOffer = {
 }
 
 internals.getOffers = function(query, callback) {
-
-  // Find serviceOffers for all listed interests.
-  // Only return enabled offers, and one that didn't expire
-  var dbQuery = {
-    "$and":[
-      {
-        "serviceName": {"$in": query.interests}
-      },
-      {
-        "availableUntil":  { "$gte": new Date() }
-      }
-    ]
-  };
-  var returnFields = {_id:0, serviceName:1, serviceOffer:1};
-    serviceOfferModel.find(dbQuery, returnFields, function(err, doc) {
-    var messages = [];
-    var errors = null;
-    if (!err) {
-      errors = {
-        statusCode: 200,
-        message: 'Ok',
-        serviceOffers: doc
-      };
-    } else {
-      errors = {
-        statusCode: 409,
-        code: err.code,
-        message: err.message,
+  // validate accountKey.
+  var accountDbQuery = {"accountKey": query.accountKey};
+  accountModel.findOne(accountDbQuery, function(err, doc) {
+    if(typeof doc == 'undefined' || doc == null) {
+      let errors = {
+        statusCode: 403,
+        message: 'Invalid account key',
         serviceOffers: null
       };
-      messages.push(err.errors);
-      messages.push(err.message);
-      messages.push({"interests": query.interests});
-      logger.info("internals.getOffers - Errors getting service Offers in db: ", messages);
+      return callback(403, errors);
+    } else {
+      // Find serviceOffers for all listed interests.
+      // Only return enabled offers, and one that didn't expire
+      var dbQuery = {
+        "$and":[
+          {
+            "serviceName": {"$in": query.interests}
+          },
+          {
+            "availableUntil":  { "$gte": new Date() }
+          }
+        ]
+      };
+      var returnFields = {_id:0, serviceName:1, serviceOffer:1};
+      serviceOfferModel.find(dbQuery, returnFields, function(err, doc) {
+        let messages = [];
+        let errors = null;
+        if (!err) {
+          errors = {
+            statusCode: 200,
+            message: 'Ok',
+            serviceOffers: doc
+          };
+          return callback(200, errors);
+        } else {
+          errors = {
+            statusCode: 409,
+            code: err.code,
+            message: err.message,
+            serviceOffers: null
+          };
+          messages.push(err.errors);
+          messages.push(err.message);
+          messages.push({"interests": query.interests});
+          logger.info("internals.getOffers - Errors getting service Offers in db: ", messages);
+          return callback(409, errors);
+        }
+      });
     }
-    callback(200, errors);
   });
 }
 
@@ -125,6 +145,7 @@ internals.createServiceOffer = function(payload, callback) {
         message: 'Ok',
         serviceOffer: doc
       };
+      return callback(200, errors);
     } else {
       errors = {
         statusCode: 409,
@@ -136,7 +157,7 @@ internals.createServiceOffer = function(payload, callback) {
       messages.push(err.message);
       messages.push({"accountKey": query.accountKey});
       logger.info("internals.createServiceOffer - Errors saving service offer in db: ", messages);
+      return callback(409, errors);
     }
-    callback(200, errors);
   });
 }

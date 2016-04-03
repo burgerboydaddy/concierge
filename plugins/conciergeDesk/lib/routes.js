@@ -4,6 +4,7 @@ const producer = require('./producer');
 
 // API Server Endpoints
 exports.endpoints = [
+
   // Accounts methods
   {method: "GET", path: "/account", config: account.getAccount},
   {method: "PUT", path: "/account", config: account.createAccount},

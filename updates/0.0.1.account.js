@@ -2,7 +2,7 @@ const async = require('async');
 const MongoClient = require('mongodb').MongoClient;
 
 const adminAccounts = [
-  { enabled: true, accountKey: 'firstAdmin', accountSecret: 'SOMERANDOMSECRET', accountName:'CONCIERGE', created_at: new Date(), updated_at: new Date()}
+  { enabled: true, accountKey: 'super_admin', accountSecret: '$2a$10$0.c1b8tIgmTCwYnx/NFjg.UpZXnP/G0qTtpH/Uk0CrO84aOSNvkwa', accountName:'CONCIERGE', created_at: new Date(), updated_at: new Date()}
 ];
 var dbConn;
 
