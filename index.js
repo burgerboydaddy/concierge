@@ -31,9 +31,10 @@ var updateAccounts = require('./updates/0.0.1.account');
 updateAccounts();
 
 const server = new Hapi.Server();
+
 server.connection({
-  host: process.env.APP_HOST,
-  port: process.env.APP_PORT,
+  host: process.env.APP_HOST || 'localhost',
+  port: process.env.APP_PORT || 8001,
   router: {stripTrailingSlash: true}
 });
 
