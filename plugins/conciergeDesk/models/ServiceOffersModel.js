@@ -14,7 +14,11 @@ var serviceOffersSchema = {
   serviceOffer: {type: String, required: true, unique: false},
   availableUntil: {type: Date, required: true, unique: false, index: true},
   registeredBy: {type: String, required: true, unique: false, index:true},
-  isAliveCheck: {type: Schema.Types.Mixed, required: true, unique: false, default: {}, index:false},
+  isAliveCheck: {
+    checkIsAlive: {type: Boolean, required: true, default: false},
+    isAliveCheckURL: {type: String, required: false, default: ''},
+    isAliveCheckInterval: {type: Number, required: false, default: 0}
+  },
   created_at: {type: Date, default: Date.now, index: true},
   updated_at: {type: Date, default: Date.now, index: true}
 };
@@ -22,14 +26,6 @@ var serviceOffersSchema = {
 var ServiceOffersSchema = new Schema(serviceOffersSchema);
 
 // Date setter
-ServiceOffersSchema.path('created_at')
-  .default(function(){
-    return new Date();
-  })
-  .set(function(v) {
-    return v == 'now' ? new Date() : v;
-  });
-
 ServiceOffersSchema.path('updated_at')
   .default(function(){
     return new Date();

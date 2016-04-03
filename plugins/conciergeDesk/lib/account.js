@@ -33,14 +33,15 @@ exports.createAccount = {
   tags: ['api'],
   auth: false,
   validate: {
-    query: {
+    params: false,
+    payload: {
       accountName: Joi.string().required().description("Account Name"),
       accountKey: Joi.string().required().description("Account key"),
       accountSecret: Joi.string().required().description("Account secret")
     }
   },
   handler: function (request, reply) {
-    internals.createAccount(request.query, function (err, data) {
+    internals.createAccount(request.payload, function (err, data) {
       if (err != null && typeof err.code !== 'undefined' && err.code != 200) {
         reply(Calibrate(Boom.badData(err.message, err)));
       } else {
@@ -57,17 +58,16 @@ internals.getAccount = function (query, callback) {
     var errors = null;
     if (!err) {
       errors = {
-        id: 200,
         statusCode: 200,
-        message: 'all ok',
+        message: 'Ok',
         account: doc
       };
     } else {
       errors = {
-        id: 400,
         statusCode: 409,
         code: err.code,
-        message: err.message
+        message: err.message,
+        account: null
       };
       messages.push(err.errors);
       messages.push(err.message);
@@ -78,38 +78,37 @@ internals.getAccount = function (query, callback) {
   });
 }
 
-internals.createAccount = function(query, callback) {
+internals.createAccount = function(payload, callback) {
   var account = new accountModel();
-  account.accountName = query.accountName;
-  account.accountKey = query.accountKey;
-  account.accountSecret = query.accountSecret;
+  account.accountName = payload.accountName;
+  account.accountKey = payload.accountKey;
+  account.accountSecret = payload.accountSecret;
 
   var accountToUpdate = {};
   accountToUpdate = Object.assign(accountToUpdate, account._doc);
   delete accountToUpdate._id;
   // findOne and Update; or if object doesn't exist upsert
-  var dbQuery = {"accountKey": query.accountKey};
+  var dbQuery = {"accountKey": payload.accountKey};
   var options = {new:true, upsert:true};
   accountModel.findOneAndUpdate(dbQuery, accountToUpdate, options, function (err, doc) {
     var messages = [];
     var errors = null;
     if (!err) {
       errors = {
-        id: 200,
         statusCode: 200,
-        message: 'all ok',
+        message: 'Ok',
         account: doc
       };
     } else {
       errors = {
-        id: 400,
         statusCode: 409,
         code: err.code,
-        message: err.message
+        message: err.message,
+        account: null
       };
       messages.push(err.errors);
       messages.push(err.message);
-      messages.push({"accountKey": query.accountKey});
+      messages.push({"accountKey": payload.accountKey});
       logger.info("internals.createAccount - Errors saving account in db: ", messages);
     }
     callback(200, errors);

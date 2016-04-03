@@ -19,15 +19,6 @@ var accountSchema = {
 
 var AccountSchema = new Schema(accountSchema);
 
-// Date setter
-AccountSchema.path('created_at')
-  .default(function(){
-    return new Date();
-  })
-  .set(function(v) {
-    return v == 'now' ? new Date() : v;
-  });
-
 AccountSchema.path('updated_at')
   .default(function(){
     return new Date();
