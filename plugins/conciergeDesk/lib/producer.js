@@ -35,11 +35,36 @@ exports.getServiceOffers = {
   }
 }
 
+exports.getServiceOffer = {
+  description: "Get single service offer from db.",
+  tags: ['api'],
+  auth: false,
+  validate: {
+    query: {
+      accountKey: Joi.string().required().description("Account key"),
+      interest: Joi.string().required().description("Name of the service that consumer what to query")
+    }
+  },
+  handler: function (request, reply) {
+    internals.getOffer(request.query, function (err, data) {
+      if (err != null && typeof err !== 'undefined' && err != 200) {
+        if(err == 403) {
+          reply(Calibrate(Boom.forbidden(data.message, 403)));
+        } else {
+          reply(Calibrate(Boom.notFound(data.message, 404)));
+        }
+      } else {
+        reply(Calibrate(data));
+      }
+    });
+  }
+}
+
 exports.createServiceOffer = {
   description: "Create service offer in database.",
   tags: ['api'],
-  // auth: false,
-  auth: 'simple',
+  auth: false,
+  // auth: 'simple',
   validate: {
     params: false,
     payload: {
@@ -83,6 +108,59 @@ internals.getOffers = function(query, callback) {
         "$and":[
           {
             "serviceName": {"$in": query.interests}
+          },
+          {
+            "availableUntil":  { "$gte": new Date() }
+          }
+        ]
+      };
+      var returnFields = {_id:0, serviceName:1, serviceOffer:1};
+      serviceOfferModel.find(dbQuery, returnFields, function(err, doc) {
+        let messages = [];
+        let errors = null;
+        if (!err) {
+          errors = {
+            statusCode: 200,
+            message: 'Ok',
+            serviceOffers: doc
+          };
+          return callback(200, errors);
+        } else {
+          errors = {
+            statusCode: 409,
+            code: err.code,
+            message: err.message,
+            serviceOffers: null
+          };
+          messages.push(err.errors);
+          messages.push(err.message);
+          messages.push({"interests": query.interests});
+          logger.info("internals.getOffers - Errors getting service Offers in db: ", messages);
+          return callback(409, errors);
+        }
+      });
+    }
+  });
+}
+
+internals.getOffer = function(query, callback) {
+  // validate accountKey.
+  var accountDbQuery = {"accountKey": query.accountKey};
+  accountModel.findOne(accountDbQuery, function(err, doc) {
+    if(typeof doc == 'undefined' || doc == null) {
+      let errors = {
+        statusCode: 403,
+        message: 'Invalid account key',
+        serviceOffers: null
+      };
+      return callback(403, errors);
+    } else {
+      // Find serviceOffers for all listed interests.
+      // Only return enabled offers, and one that didn't expire
+      var dbQuery = {
+        "$and":[
+          {
+            "serviceName": query.interest
           },
           {
             "availableUntil":  { "$gte": new Date() }

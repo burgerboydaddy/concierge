@@ -10,27 +10,11 @@ const Bcrypt = require('bcrypt');
 // define internals
 var internals = {};
 
-// // Next one is for test purpose only
-// exports.getHi = {
-//   description: "Get hi from account.",
-//   tags: ['api'],
-//   auth: 'simple',
-//   validate: {
-//     query: {
-//       accountKey: Joi.string().required().description("Account key")
-//     }
-//   },
-//   handler: function (request, reply) {
-//     console.log(request.auth.credentials);
-//     reply('hello, ' + request.auth.credentials.accountName);
-//   }
-// }
-
 exports.getAccount = {
   description: "Get account from db.",
   tags: ['api'],
-  // auth: false,
-  auth: 'simple',
+  auth: false,
+  // auth: 'simple',
   validate: {
     query: {
       accountKey: Joi.string().required().description("Account key")

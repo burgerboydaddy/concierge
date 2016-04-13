@@ -11,6 +11,7 @@ exports.endpoints = [
   {method: "PATCH", path: "/account", config: account.updateAccountSecret},
 
   // Service offers methods
-  {method: "PUT", path: "/serviceOffer", config: producer.createServiceOffer},
-  {method: "GET", path: "/serviceOffer", config: producer.getServiceOffers}
+  {method: "GET", path: "/serviceOffers", config: producer.getServiceOffers},
+  {method: "GET", path: "/serviceOffer", config: producer.getServiceOffer},
+  {method: "PUT", path: "/serviceOffer", config: producer.createServiceOffer}
 ];

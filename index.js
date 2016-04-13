@@ -23,7 +23,7 @@ require('events').EventEmitter.prototype._maxListeners = 100;
 // Open DB connection
 global.mongo = process.env.DB_CONNECTION || 'mongodb://localhost/' + pkg.name;
 console.log("my db:", global.mongo);
-global.db = mongoose.connect(mongo);
+global.db = mongoose.connect(global.mongo);
 
 // Add scripts from updates folder
 // TODO: make this as auto discovery!
